@@ -98,6 +98,7 @@ export const getAllUsers = async (req, res) => {
 
 export const deleteUser = async (req, res) => {
   const { id } = req.params;
+
   try {
     if (!id) {
       return res.status(400).json({
@@ -107,6 +108,7 @@ export const deleteUser = async (req, res) => {
     }
 
     const user = await UserModel.findOne({ id });
+
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -114,6 +116,7 @@ export const deleteUser = async (req, res) => {
       });
     }
 
+    // 🚫 prevent self delete
     if (req.user.id === id) {
       return res.status(400).json({
         success: false,
@@ -121,7 +124,30 @@ export const deleteUser = async (req, res) => {
       });
     }
 
-    // 🟢 soft delete (recommended)
+    // 🚫 prevent double delete
+    if (user.status === "inactive") {
+      return res.status(400).json({
+        success: false,
+        message: "User already deleted",
+      });
+    }
+
+    // 🚫 prevent deleting last admin
+    if (user.role === "admin") {
+      const adminCount = await UserModel.countDocuments({
+        role: "admin",
+        status: "active",
+      });
+
+      if (adminCount <= 1) {
+        return res.status(400).json({
+          success: false,
+          message: "Cannot delete the last admin",
+        });
+      }
+    }
+
+    // 🟢 soft delete
     user.status = "inactive";
     await user.save();
 
