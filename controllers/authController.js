@@ -97,7 +97,7 @@ export const login = async (req, res) => {
     if (!passwordMatch) {
       return res.status(401).json({
         success: false,
-        message: error.message,
+        message: "Invalid credentials",
       });
     }
 
@@ -116,8 +116,8 @@ export const login = async (req, res) => {
 
     res.cookie("token", token, {
       httpOnly: true,
-      secure: false, // true in production
-      sameSite: "strict", // none in production
+      secure: true, // true in production
+      sameSite: "none", // none in production
       maxAge: 24 * 60 * 60 * 1000,
     });
 

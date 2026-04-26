@@ -14,7 +14,7 @@ export const authMiddleware = async (req, res, next) => {
     }
 
     //verify token
-    const decode = await jwt.verify(token, process.env.JWT_SECRET);
+    const decode = jwt.verify(token, process.env.JWT_SECRET);
 
     const user = await UserModel.findOne({ id: decode.id });
     if (!user) {
@@ -25,7 +25,7 @@ export const authMiddleware = async (req, res, next) => {
     }
 
     if (user.status !== "active") {
-      res.status(403).json({
+      return res.status(403).json({
         success: false,
         message: "User is inactive",
       });
